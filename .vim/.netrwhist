@@ -1,0 +1,6 @@
+let g:netrw_dirhistmax  =10
+let g:netrw_dirhist_cnt =4
+let g:netrw_dirhist_1='/Users/kylo/forgemodules/pdxcat-amanda-0.1.7/manifests'
+let g:netrw_dirhist_2='/Users/kylo/forgemodules/ploperations-unicorn-1.0.0'
+let g:netrw_dirhist_3='/Users/kylo/forgemodules/ploperations-unicorn-1.0.0/manifests'
+let g:netrw_dirhist_4='/Users/kylo/devel/puppet/ext/packaging'
