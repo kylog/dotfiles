@@ -63,7 +63,11 @@ end
 function applyPlace(win, place)
   local scrs = screen:allscreens()
   local scr = scrs[place[1]]
-  grid.set(win, place[2], scr)
+  if scr then
+    grid.set(win, place[2], scr)
+  else
+    alert.show("Wrong screen layout")
+  end
 end
 
 function applyLayout(layout)
@@ -102,16 +106,10 @@ local goright = {x = gw/2, y = 0, w = gw/2, h = gh}
 local gobig = {x = 0, y = 0, w = gw, h = gh}
 
 local fullApps = {
-  "Safari","Aurora","Nightly","Xcode","Qt Creator","Google Chrome",
-  "Google Chrome Canary", "Eclipse", "Coda 2", "iTunes", "Emacs", "Firefox"
+  "Safari","Xcode","Google Chrome",
 }
 local layout2 = {
-  Airmail = {1, gomiddle},
-  Spotify = {1, gomiddle},
-  Calendar = {1, gomiddle},
-  Dash = {1, gomiddle},
-  iTerm = {2, goright},
-  MacRanger = {2, goleft},
+  iTerm = {1, goright},
 }
 fnutils.each(fullApps, function(app) layout2[app] = {1, gobig} end)
 
@@ -130,18 +128,14 @@ definitions = {
   r = mjolnir.reload,
   q = function() appfinder.app_from_name("Mjolnir"):kill() end,
 
-  k = function() hints.appHints(appfinder.app_from_name("Emacs")) end,
   j = function() hints.appHints(window.focusedwindow():application()) end,
   ec = hints.windowHints
 }
 
 -- launch and focus applications
 fnutils.each({
-  { key = "o", app = "MacRanger" },
   { key = "e", app = "Google Chrome" },
-  { key = "u", app = "Emacs" },
   { key = "i", app = "iTerm" },
-  { key = "m", app = "Airmail" }
 }, function(object)
     definitions[object.key] = function() application.launchorfocus(object.app) end
 end)
