@@ -1,15 +1,15 @@
 -- Load Extensions
 local application = require "mjolnir.application"
-local window = require "mjolnir.window"
-local hotkey = require "mjolnir.hotkey"
-local keycodes = require "mjolnir.keycodes"
-local fnutils = require "mjolnir.fnutils"
-local alert = require "mjolnir.alert"
-local screen = require "mjolnir.screen"
+local window      = require "mjolnir.window"
+local hotkey      = require "mjolnir.hotkey"
+local keycodes    = require "mjolnir.keycodes"
+local fnutils     = require "mjolnir.fnutils"
+local alert       = require "mjolnir.alert"
+local screen      = require "mjolnir.screen"
 -- User packages
-local grid = require "mjolnir.bg.grid"
-local hints = require "mjolnir.th.hints"
-local appfinder = require "mjolnir.cmsj.appfinder"
+local grid        = require "mjolnir.bg.grid"
+local hints       = require "mjolnir.th.hints"
+local appfinder   = require "mjolnir.cmsj.appfinder"
 
 local definitions = nil
 local hyper = nil
