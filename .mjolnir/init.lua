@@ -148,11 +148,42 @@ end)
 
 init()
 
-hotkey.bind({"cmd", "alt", "ctrl"}, "D", function()
+-- nudge left/up/down/right with h/j/k/l
+-- factor this so it's table-driven
+hotkey.bind({"cmd", "alt", "ctrl"}, "H", function()
   local win = window.focusedwindow()
-  local f = win:frame()
-  f.x = f.x + 10
-  win:setframe(f)
+  if win then
+    local f = win:frame()
+    f.x = f.x - 10
+    win:setframe(f)
+  end
+end)
+
+hotkey.bind({"cmd", "alt", "ctrl"}, "J", function()
+  local win = window.focusedwindow()
+  if win then
+    local f = win:frame()
+    f.y = f.y - 10
+    win:setframe(f)
+  end
+end)
+
+hotkey.bind({"cmd", "alt", "ctrl"}, "K", function()
+  local win = window.focusedwindow()
+  if win then
+    local f = win:frame()
+    f.y = f.y + 10
+    win:setframe(f)
+  end
+end)
+
+hotkey.bind({"cmd", "alt", "ctrl"}, "L", function()
+  local win = window.focusedwindow()
+  if win then
+    local f = win:frame()
+    f.x = f.x + 10
+    win:setframe(f)
+  end
 end)
 
 
