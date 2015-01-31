@@ -1,3 +1,5 @@
+-- From http://thume.ca/howto/2014/12/02/using-mjolnir-an-extensible-osx-window-manager/
+
 -- Load Extensions
 local application = require "mjolnir.application"
 local window      = require "mjolnir.window"
