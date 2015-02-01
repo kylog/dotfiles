@@ -1,31 +1,27 @@
 -- Ensure the IPC command line client is available
 hs.ipc.cliInstall()
 
+-- disable animation
+hs.window.animationDuration = 0
+
 -- Things we need to clean up at reload
 local configFileWatcher = nil
-local appWatcher = nil
-local wifiWatcher = nil
-local screenWatcher = nil
+local appWatcher        = nil
+local wifiWatcher       = nil
+local screenWatcher     = nil
 
 -- Define some keyboard modifier variables
--- (Node: Capslock bound to cmd+alt+ctrl+shift via Seil and Karabiner)
 local alt = {"⌥"}
-local hyper = {"⌘", "⌥", "⌃", "⇧"}
+-- TODO: consider binding capslock to cmd+alt+ctrl+shift via Seil and Karabiner
+--local hyper = {"⌘", "⌥", "⌃", "⇧"}
+local hyper = {"⌘", "⌥", "⌃"}
 
 -- Define monitor names for layout purposes
 local display_laptop = "Color LCD"
 local display_monitor = "Thunderbolt Display"
 
--- Define audio device names for headphone/speaker switching
-local headphoneDevice = "USB PnP Sound Device"
-local speakerDevice = "Audioengine 2+"
-
--- Define default brightness for MiLight extension
-local brightness = 13
-local officeLED = hs.milight.new("10.0.88.255")
-
 -- Defines for WiFi watcher
-local homeSSID = "chrul" -- My home WiFi SSID
+local homeSSID = "gracie" -- My home WiFi SSID
 local lastSSID = hs.wifi.currentNetwork()
 
 -- Defines for screen watcher
@@ -34,78 +30,23 @@ local lastNumberOfScreens = #hs.screen.allScreens()
 -- Define window layouts
 --   Format reminder:
 --     {"App name", "Window name", "Display Name", "unitrect", "framerect", "fullframerect"},
-local internal_display = {
-    {"IRC",               nil,          display_laptop, hs.layout.maximized, nil, nil},
-    {"Reeder",            nil,          display_laptop, hs.layout.left30,    nil, nil},
-    {"Safari",            nil,          display_laptop, hs.layout.maximized, nil, nil},
-    {"OmniFocus",         nil,          display_laptop, hs.layout.maximized, nil, nil},
-    {"Mail",              nil,          display_laptop, hs.layout.maximized, nil, nil},
-    {"Microsoft Outlook", nil,          display_laptop, hs.layout.maximized, nil, nil},
+local laptop_only = {
+    {"iTerm",             nil,          display_laptop, hs.layout.maximized, nil, nil},
+    {"Textual",           nil,          display_laptop, hs.layout.maximized, nil, nil},
+    {"Google Chrome",     nil,          display_laptop, hs.layout.maximized, nil, nil},
+    {"RubyMine",          nil,          display_laptop, hs.layout.maximized, nil, nil},
     {"HipChat",           nil,          display_laptop, hs.layout.maximized, nil, nil},
-    {"1Password",         nil,          display_laptop, hs.layout.maximized, nil, nil},
-    {"Calendar",          nil,          display_laptop, hs.layout.maximized, nil, nil},
-    {"Messages",          nil,          display_laptop, hs.layout.maximized, nil, nil},
     {"Evernote",          nil,          display_laptop, hs.layout.maximized, nil, nil},
-    {"iTunes",            "iTunes",     display_laptop, hs.layout.maximized, nil, nil},
-    {"iTunes",            "MiniPlayer", display_laptop, nil,       nil, hs.geometry.rect(0, -48, 400, 48)},
 }
 
 local dual_display = {
-    {"IRC",               nil,          display_laptop,  hs.layout.maximized, nil, nil},
-    {"Reeder",            nil,          display_monitor, hs.layout.right50,   nil, nil},
-    {"Safari",            nil,          display_monitor, hs.layout.left50,    nil, nil},
-    {"OmniFocus",         nil,          display_monitor, hs.layout.right50,   nil, nil},
-    {"Mail",              nil,          display_laptop,  hs.layout.maximized, nil, nil},
-    {"Microsoft Outlook", nil,          display_monitor, hs.layout.maximized, nil, nil},
+    {"iTerm",             nil,          display_laptop,  hs.layout.maximized, nil, nil},
+    {"Textual",           nil,          display_laptop,  hs.layout.maximized, nil, nil},
+    {"Google Chrome",     nil,          display_laptop,  hs.layout.maximized, nil, nil},
+    {"RubyMine",          nil,          display_laptop,  hs.layout.maximized, nil, nil},
     {"HipChat",           nil,          display_monitor, hs.layout.right50,   nil, nil},
-    {"1Password",         nil,          display_monitor, hs.layout.right50,   nil, nil},
-    {"Calendar",          nil,          display_monitor, hs.layout.maximized, nil, nil},
-    {"Messages",          nil,          display_laptop,  hs.layout.maximized, nil, nil},
     {"Evernote",          nil,          display_monitor, hs.layout.right50,   nil, nil},
-    {"iTunes",            "iTunes",     display_laptop,  hs.layout.maximized, nil, nil},
-    {"iTunes",            "MiniPlayer", display_laptop,  nil,       nil, hs.geometry.rect(0, -48, 400, 48)},
 }
-
--- Helper functions
-
--- NOTE: If you reload your config on a hotkey or a pathwatcher, you should call caffeine:delete() there
-local caffeine = hs.menubar.new()
-function setCaffeineDisplay(state)
-    local result
-    if state then
-        result = caffeine:setIcon("caffeine-on.pdf")
-    else
-        result = caffeine:setIcon("caffeine-off.pdf")
-    end
-end
-
-function caffeineClicked()
-    setCaffeineDisplay(hs.caffeinate.toggle("displayIdle"))
-end
-
-if caffeine then
-    caffeine:setClickCallback(caffeineClicked)
-    setCaffeineDisplay(hs.caffeinate.get("displayIdle"))
-end
-
--- Toggle between speaker and headphone sound devices (useful if you have multiple USB soundcards that are always connected)
-function toggle_audio_output()
-    local current = hs.audiodevice.defaultOutputDevice()
-    local speakers = hs.audiodevice.findOutputByName(speakerDevice)
-    local headphones = hs.audiodevice.findOutputByName(headphoneDevice)
-
-    if not speakers or not headphones then
-        hs.notify.show("Hammerspoon", "", "ERROR: Some audio devices missing", "")
-        return
-    end
-
-    if current:name() == speakers:name() then
-        headphones:setDefaultOutputDevice()
-    else
-        speakers:setDefaultOutputDevice()
-    end
-    hs.notify.show("Hammerspoon", "Default output device:", hs.audiodevice.defaultOutputDevice():name(), "")
-end
 
 -- Toggle an application between being the frontmost app, and being hidden
 function toggle_application(_app)
@@ -122,6 +63,19 @@ function toggle_application(_app)
         mainwin:application():unhide()
         mainwin:focus()
     end
+end
+
+-- Nudge a window up/down/left/right by a fixed amount
+function nudge(direction)
+    frame = hs.window.focusedWindow():frame()
+    hs.notify.show("Nudge", "", "x" .. frame.x, "")
+    if     direction == "left"  then frame.x = frame.x - 10
+    elseif direction == "right" then frame.x = frame.x + 10
+    elseif direction == "up"    then frame.y = frame.y - 10
+    elseif direction == "down"  then frame.y = frame.y + 10
+    end
+    --hs.notify.show("Nudge", "", "x" .. frame.x, "")
+    hs.window.focusedWindow():setFrame(frame)
 end
 
 -- Callback function for application events
@@ -155,7 +109,7 @@ function screensChangedCallback()
 
     if lastNumberOfScreens ~= newNumberOfScreens then
         if newNumberOfScreens == 1 then
-            hs.layout.apply(internal_display)
+            hs.layout.apply(laptop_only)
         elseif newNumberOfScreens == 2 then
             hs.layout.apply(dual_display)
         end
@@ -166,40 +120,12 @@ end
 
 -- Perform tasks to configure the system for my home WiFi network
 function home_arrived()
-    hs.audiodevice.defaultOutputDevice():setVolume(25)
-    os.execute("sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setblockall off")
-    hs.applescript.applescript([[
-        tell application "Finder"
-            try
-                mount volume "smb://cmsj@servukipa._smb._tcp.local/Data"
-            end try
-        end tell
-    ]])
-    hs.applescript.applescript([[
-        tell application "GeekTool Helper"
-            refresh all
-        end tell
-    ]])
-
-    hs.notify.show("Hammerspoon", "", "Unmuted volume, mounted volumes, disabled firewall", "")
+    hs.notify.show("Hammerspoon", "", "On home wifi", "")
 end
 
 -- Perform tasks to configure the system for any WiFi network other than my home
 function home_departed()
-    hs.audiodevice.defaultOutputDevice():setVolume(0)
-    os.execute("sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setblockall on")
-    hs.applescript.applescript([[
-        tell application "Finder"
-            eject "Data"
-        end tell
-    ]])
-    hs.applescript.applescript([[
-        tell application "GeekTool Helper"
-            refresh all
-        end tell
-    ]])
-
-    hs.notify.show("Hammerspoon", "", "Muted volume, unmounted volumes, enabled firewall", "")
+    hs.notify.show("Hammerspoon", "", "Left home wifi", "")
 end
 
 -- Reload config automatically
@@ -216,8 +142,6 @@ function reloadConfig()
     wifiWatcher:stop()
     wifiWatcher = nil
 
-    caffeine:delete()
-
     hs.reload()
 end
 
@@ -230,38 +154,32 @@ hs.hotkey.bind(hyper, 'a', function() hs.window.focusedWindow():moveToUnit(hs.la
 hs.hotkey.bind(hyper, 's', function() hs.window.focusedWindow():moveToUnit(hs.layout.right70) end)
 hs.hotkey.bind(hyper, '[', function() hs.window.focusedWindow():moveToUnit(hs.layout.left50) end)
 hs.hotkey.bind(hyper, ']', function() hs.window.focusedWindow():moveToUnit(hs.layout.right50) end)
-hs.hotkey.bind(hyper, 'f', function() hs.window.focusedWindow():maximize() end)
-hs.hotkey.bind(hyper, 'r', function() hs.window.focusedWindow():toggleFullscreen() end)
+hs.hotkey.bind(hyper, 'm', function() hs.window.focusedWindow():maximize() end)
+hs.hotkey.bind(hyper, 'r', function() hs.window.focusedWindow():toggleFullScreen() end)
+
+-- Hotkeys to nudge windows in a direction
+hs.hotkey.bind(hyper, 'h', function() nudge("left")  end)
+hs.hotkey.bind(hyper, 'j', function() nudge("up")    end)
+hs.hotkey.bind(hyper, 'k', function() nudge("down")  end)
+hs.hotkey.bind(hyper, 'l', function() nudge("right") end)
 
 -- Hotkeys to trigger defined layouts
-hs.hotkey.bind(hyper, '1', function() hs.layout.apply(internal_display) end)
-hs.hotkey.bind(hyper, '2', function() hs.layout.apply(dual_display) end)
+-- TODO: 4 layouts: laptop, dual, laptop + dual, laptop + single
+hs.hotkey.bind(hyper, '0', function() hs.layout.apply(laptop_only) end)
+hs.hotkey.bind(hyper, '9', function() hs.layout.apply(dual_display) end)
 
 -- Application hotkeys
-hs.hotkey.bind(hyper, '`', function() hs.application.launchOrFocus("iTerm") end)
-hs.hotkey.bind(hyper, 'q', function() toggle_application("Safari") end)
-hs.hotkey.bind(hyper, 'z', function() toggle_application("Reeder") end)
-hs.hotkey.bind(hyper, 'w', function() toggle_application("IRC") end)
-
--- Lighting hotkeys
-hs.hotkey.bind({}, 'f5', function()
-    brightness = brightness - 1
-    brightness = officeLED:zoneBrightness(1, brightness)
-    officeLED:zoneBrightness(2, brightness - 3)
-end)
-hs.hotkey.bind({}, 'f6', function()
-    brightness = brightness + 1
-    brightness = officeLED:zoneBrightness(1, brightness)
-    officeLED:zoneBrightness(2, brightness - 3)
-end)
-hs.hotkey.bind(hyper, 'f5', function() brightness = officeLED:zoneBrightness(0, hs.milight.minBrightness) end)
-hs.hotkey.bind(hyper, 'f6', function() brightness = officeLED:zoneBrightness(0, hs.milight.maxBrightness) end)
+hs.hotkey.bind(hyper, 'i', function() hs.application.launchOrFocus("iTerm") end)
+hs.hotkey.bind(hyper, 'c', function() toggle_application("Google Chrome") end)
+hs.hotkey.bind(hyper, 't', function() toggle_application("Textual") end)
+hs.hotkey.bind(hyper, 'x', function() toggle_application("HipChat") end)
 
 -- Misc hotkeys
 hs.hotkey.bind(hyper, 'y', hs.toggleConsole)
 hs.hotkey.bind(hyper, 'n', function() os.execute("open ~") end)
-hs.hotkey.bind(hyper, 'c', caffeineClicked)
-hs.hotkey.bind(hyper, 'Escape', toggle_audio_output)
+
+-- Window Hints
+hs.hotkey.bind(hyper, '.', hs.hints.windowHints)
 
 -- Create and start our callbacks
 configFileWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", reloadConfig)
