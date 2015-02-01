@@ -67,15 +67,21 @@ end
 
 -- Nudge a window up/down/left/right by a fixed amount
 function nudge(direction)
-    frame = hs.window.focusedWindow():frame()
-    hs.notify.show("Nudge", "", "x" .. frame.x, "")
+    -- get focused window, if there is one
+    win = hs.window.focusedWindow()
+    if not win then
+      return
+    end
+
+    -- get current frame geometry, adjust and apply new setting
+    -- no saturation math, sometimes I want to nudge a window off-screen
+    frame = win:frame()
     if     direction == "left"  then frame.x = frame.x - 10
     elseif direction == "right" then frame.x = frame.x + 10
     elseif direction == "up"    then frame.y = frame.y - 10
     elseif direction == "down"  then frame.y = frame.y + 10
     end
-    --hs.notify.show("Nudge", "", "x" .. frame.x, "")
-    hs.window.focusedWindow():setFrame(frame)
+    win:setFrame(frame)
 end
 
 -- Callback function for application events
