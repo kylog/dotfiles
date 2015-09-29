@@ -12,7 +12,7 @@
 [alias]
 	last          = log -1 HEAD
 	lg            = "log --pretty=format:'%C(yellow)%h%C(reset) %C(blue)%an%C(reset) %C(cyan)%cr%C(reset) %s %C(green)%d%C(reset)' --graph --date-order"
-  evil          = submodule update --init --recursive
+	evil          = submodule update --init --recursive
  
 	# aliases for bisect when trying to find the first *good* rev
 	bisect-fixed  = bisect bad
