@@ -1,0 +1,46 @@
+[user]
+	name = Kylo Ginsberg
+	email = kylo@puppetlabs.com
+
+[core]
+	excludesfile = /Users/kylo/.gitignore
+[color]
+	ui = true
+[log]
+	date = local
+
+[alias]
+	last          = log -1 HEAD
+	lg            = "log --pretty=format:'%C(yellow)%h%C(reset) %C(blue)%an%C(reset) %C(cyan)%cr%C(reset) %s %C(green)%d%C(reset)' --graph --date-order"
+  evil          = submodule update --init --recursive
+ 
+	# aliases for bisect when trying to find the first *good* rev
+	bisect-fixed  = bisect bad
+	bisect-broken = bisect good
+	
+	branchdate    =  !git for-each-ref --sort=-committerdate refs/heads/ --format='%(committerdate:short)%09%(authorname)%09%(refname:short)' | less
+	stat          = status --untracked-files=no
+	
+	logm          = ! "git log $1^..$1"
+
+  check-whitespace = !git diff-tree --check $(git hash-object -t tree /dev/null) HEAD
+
+  hardpull      = !git fetch origin && git reset --hard origin/$(git rev-parse --abbrev-ref HEAD)
+[filter "media"]
+	clean = git media clean %f
+	smudge = git media smudge %f
+	required = true
+[difftool "sourcetree"]
+	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
+	path = 
+[mergetool "sourcetree"]
+	cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
+	trustExitCode = true
+[credential]
+	helper = osxkeychain
+[rerere]
+	enabled = 1
+[filter "lfs"]
+	clean = git lfs clean %f
+	smudge = git lfs smudge %f
+	required = true
