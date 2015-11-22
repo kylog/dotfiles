@@ -1,14 +1,12 @@
 [user]
 	name = Kylo Ginsberg
 	email = kylo@puppetlabs.com
-
 [core]
 	excludesfile = /Users/kylo/.gitignore
 [color]
 	ui = true
 [log]
 	date = local
-
 [alias]
 	last          = log -1 HEAD
 	lg            = "log --pretty=format:'%C(yellow)%h%C(reset) %C(blue)%an%C(reset) %C(cyan)%cr%C(reset) %s %C(green)%d%C(reset)' --graph --date-order"
@@ -30,12 +28,6 @@
 	clean = git media clean %f
 	smudge = git media smudge %f
 	required = true
-[difftool "sourcetree"]
-	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
-	path = 
-[mergetool "sourcetree"]
-	cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
-	trustExitCode = true
 [credential]
 	helper = osxkeychain
 [rerere]
@@ -44,3 +36,5 @@
 	clean = git lfs clean %f
 	smudge = git lfs smudge %f
 	required = true
+[push]
+	default = simple
