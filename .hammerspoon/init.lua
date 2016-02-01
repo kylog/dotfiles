@@ -202,14 +202,3 @@ wifiWatcher:start()
 
 -- Finally, show a notification that we finished loading the config successfully
 hs.notify.show("Hammerspoon", "", "Config loaded", "")
-
--- This is some developer debugging stuff. It will cause Hammerspoon to crash if any Lua is being executed on the wrong thread. You probably don't want this in your config :)
-local function crashifnotmain(reason)
---  print("crashifnotmain called with reason", reason) -- may want to remove this, very verbose otherwise
-  if not hs.crash.isMainThread() then
-    print("not in main thread, crashing")
-    hs.crash.crash()
-  end
-end
-debug.sethook(crashifnotmain, 'c')
-
