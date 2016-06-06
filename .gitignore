@@ -1,0 +1,6 @@
+.idea
+.ruby-version
+Gemfile.local
+junit
+.DS_store
+.zsh-secrets

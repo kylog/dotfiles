@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+# parameterize the tarball name
+cp ../Downloads/2016-05-26_000005.tar .
+tar xf 2016-05-26_000005.tar
+cd 2016-05-26_000005
+
+# use david's script to expand just latest of each module
+~/bin/forge-latest . | xargs -L1 tar xzvf
+
+# toss all the tgz's
+for i in `ls -1`; do [ -f $i ] && rm $i; done
+
+# remove all the vendor directories; this cleans up a handful of modules that
+# inadvertently included all of puppet in their module
+find . -name vendor -type d -depth 2 | xargs rm -rf

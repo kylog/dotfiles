@@ -1,0 +1,33 @@
+#! /usr/bin/ruby
+
+# To use this, untar the forge backup tarball from
+# http://forge-dl-backup.s3-website-us-west-2.amazonaws.com/ somewhere and
+# then run this script, passing the name of the directory where you
+# unpacked the tarball.
+#
+# The script will print the names of the latest version of each tarball;
+# you can feed that into something like 'xargs -iF tar xf DIR/F'
+
+TOP_DIR=File::expand_path(File::dirname($0) + "/..")
+
+if ARGV.size != 1
+  puts "Usage: latest DIR"
+  puts "For each package in DIR, list the latest tarball"
+  exit 1
+end
+
+pkgs = {}
+orig = {}
+Dir.foreach(ARGV[0]) do |e|
+  if e =~ /\A(?:[0-9]*_)?(.*)-([0-9.]+).tar.gz\Z/
+    pkgs[$1] ||= []
+    pkgs[$1] << $2
+    orig[$1] ||= {}
+    orig[$1][$2] = e
+  end
+end
+
+pkgs.keys.each do |name|
+  v = pkgs[name].sort.last
+  puts orig[name][v]
+end

@@ -1,0 +1,53 @@
+#! /usr/bin/ruby
+
+# To use this, first download a forge tarball, and expand it with
+# something like forge-latest | xargs -L1 tar xzvf
+#
+# The script will print for each module a csv line with:
+# * name of module
+# * uses erb?
+# * uses epp?
+# * uses ruby functions
+# * uses puppet functions
+# * uses custom ruby code (types/providers/report processors/etc)
+# * uses custom facts
+# * uses external facts
+# * uses ruby types
+# * uses ruby providers
+# * uses ruby reports
+# * uses ruby faces
+
+puts ARGV
+
+if ARGV.size != 1
+  puts "Usage: latest DIR"
+  puts "For each directory in DIR, emit a csv line summarizing usage of different puppet extension points"
+  exit 1
+end
+
+print "mod,erb,epp,ruby_functions,puppet_functions,custom_facts,external_facts,"
+print "ruby_types,ruby_providers,ruby_reports,ruby_faces\n"
+
+Dir.foreach(ARGV[0]) do |mod|
+  next unless File.directory? mod
+  next if mod[0] == "."
+
+  Dir.chdir(mod) do
+    erb_templates    = Dir.glob("templates/**/*.erb").size
+    epp_templates    = Dir.glob("templates/**/*.epp").size
+    ruby_functions   = Dir.glob("lib/puppet/parser/functions/**/*.rb").size
+    puppet_functions = Dir.glob("functions/**/*.pp").size
+    custom_facts     = Dir.glob("lib/facter/**/*.rb").size
+    external_facts   = Dir.glob("facts.d/**/*").size
+    ruby_types       = Dir.glob("lib/puppet/type/**/*.rb").size
+    ruby_providers   = Dir.glob("lib/puppet/provider/**/*.rb").size
+    ruby_reports     = Dir.glob("lib/puppet/reports/**/*.rb").size
+    ruby_faces       = Dir.glob("lib/puppet/face/**/*.rb").size
+
+    print "#{mod},#{erb_templates},#{epp_templates},#{ruby_functions},"
+    print "#{puppet_functions},#{custom_facts},#{external_facts},#{ruby_types},"
+    print "#{ruby_providers},#{ruby_reports},#{ruby_faces}"
+    print "\n"
+
+  end
+end
